@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Resumen{% endblock %}
+{% block content %}
+<section class="card">
+    <h2>Detalle por finca, lote y producto</h2>
+    <table>
+        <thead>
+            <tr><th>Finca</th><th>Lote</th><th>Producto</th><th>Litros utilizados</th></tr>
+        </thead>
+        <tbody>
+            {% for row in detalle %}
+            <tr>
+                <td>{{ row.finca }}</td>
+                <td>{{ row.lote }}</td>
+                <td>{{ row.producto }}</td>
+                <td>{{ '%.2f'|format(row.litros_utilizados) }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4">No hay aplicaciones registradas.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<section class="card">
+    <h2>Total general por producto químico</h2>
+    <table>
+        <thead>
+            <tr><th>Producto</th><th>Litros totales</th></tr>
+        </thead>
+        <tbody>
+            {% for row in totales %}
+            <tr>
+                <td>{{ row.producto }}</td>
+                <td>{{ '%.2f'|format(row.litros_totales) }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="2">No hay aplicaciones registradas.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

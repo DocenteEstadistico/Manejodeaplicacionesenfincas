@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Formulario diario{% endblock %}
+{% block content %}
+<section class="card">
+    <h2>Registro diario</h2>
+    <form method="post" id="aplicacion-form">
+        <div class="grid">
+            <label>Fecha
+                <input type="date" name="fecha" value="{{ today }}" required>
+            </label>
+            <label>Finca
+                <select name="finca_id" id="finca-select" onchange="window.location='/?finca_id='+this.value">
+                    {% for finca in fincas %}
+                    <option value="{{ finca.id }}" {% if finca.id == selected_finca_id %}selected{% endif %}>{{ finca.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>Lote
+                <select name="lote_id" id="lote-select">
+                    {% for lote in lotes %}
+                    <option value="{{ lote.id }}" {% if lote.id == selected_lote_id %}selected{% endif %}>{{ lote.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>Mezcla
+                <select name="mezcla_id" required>
+                    {% for mezcla in mezclas %}
+                    <option value="{{ mezcla.id }}">{{ mezcla.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>Manzanas aplicadas
+                <input type="number" id="manzanas" name="manzanas" min="0.1" step="0.1" required>
+            </label>
+        </div>
+        <p id="estado-lote"></p>
+        <button type="submit">Guardar aplicación</button>
+    </form>
+</section>
+
+<section class="card">
+    <h2>Últimas aplicaciones registradas</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Fecha</th><th>Finca</th><th>Lote</th><th>Mezcla</th><th>Manzanas</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for row in historial %}
+            <tr>
+                <td>{{ row.fecha }}</td>
+                <td>{{ row.finca }}</td>
+                <td>{{ row.lote }}</td>
+                <td>{{ row.mezcla }}</td>
+                <td>{{ '%.2f'|format(row.manzanas_aplicadas) }}</td>
+            </tr>
+        {% else %}
+            <tr><td colspan="5">Sin registros todavía.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<script>
+const loteSelect = document.getElementById('lote-select');
+const manzanasInput = document.getElementById('manzanas');
+const estadoText = document.getElementById('estado-lote');
+
+function renderEstado(data) {
+    estadoText.innerHTML = `Lote total: <strong>${data.area_total.toFixed(2)}</strong> manzanas, aplicadas: <strong>${data.aplicadas.toFixed(2)}</strong>, faltan: <strong>${data.restante.toFixed(2)}</strong>.`;
+    manzanasInput.max = data.restante;
+}
+
+function actualizarEstadoLote() {
+    fetch(`/api/lote_estado/${loteSelect.value}`)
+        .then((res) => res.json())
+        .then((data) => renderEstado(data));
+}
+
+loteSelect.addEventListener('change', actualizarEstadoLote);
+renderEstado({
+    area_total: {{ estado_lote.area_total }},
+    aplicadas: {{ estado_lote.aplicadas }},
+    restante: {{ estado_lote.restante }},
+});
+</script>
+{% endblock %}
